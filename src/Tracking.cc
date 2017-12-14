@@ -255,10 +255,14 @@ cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const double &timestamp)
     }
 
     if(mState==NOT_INITIALIZED || mState==NO_IMAGES_YET)
+	{
         mCurrentFrame = Frame(mImGray,timestamp,mpIniORBextractor,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth);
+	}
     else
+	{
         mCurrentFrame = Frame(mImGray,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth);
-
+	}
+	
     Track();
 
     return mCurrentFrame.mTcw.clone();
@@ -564,7 +568,7 @@ void Tracking::MonocularInitialization()
 {
 
     if(!mpInitializer)
-    {
+    {	
         // Set Reference Frame
         if(mCurrentFrame.mvKeys.size()>100)
         {
@@ -628,6 +632,8 @@ void Tracking::MonocularInitialization()
             Rcw.copyTo(Tcw.rowRange(0,3).colRange(0,3));
             tcw.copyTo(Tcw.rowRange(0,3).col(3));
             mCurrentFrame.SetPose(Tcw);
+			
+			std::cout << "Initial Keyframe TimeStamp : " << std::fixed << std::setprecision(6) << mInitialFrame.mTimeStamp << std::endl; 
 
             CreateInitialMapMonocular();
         }
@@ -1540,8 +1546,8 @@ void Tracking::Reset()
     // Clear Map (this erase MapPoints and KeyFrames)
     mpMap->clear();
 
-    KeyFrame::nNextId = 0;
-    Frame::nNextId = 0;
+    //KeyFrame::nNextId = 0;
+    //Frame::nNextId = 0;
     mState = NO_IMAGES_YET;
 
     if(mpInitializer)

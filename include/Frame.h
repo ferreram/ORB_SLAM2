@@ -186,7 +186,9 @@ public:
     static float mnMaxY;
 
     static bool mbInitialComputations;
-
+	
+	// cv::Mat image associated with the frame
+	cv::Mat mImage;
 
 private:
 

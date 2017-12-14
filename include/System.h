@@ -156,6 +156,20 @@ private:
     std::mutex mMutexMode;
     bool mbActivateLocalizationMode;
     bool mbDeactivateLocalizationMode;
+	
+	/*
+	 * 
+	 * 
+	 * CHGMT MAX
+	 *
+	 *
+	 */
+	
+	// Image PreProcessing. It allows or not the preprocessing of the images
+	int mnActivatePreProcessing;
+	
+	// First Frame. It is used to get the timestamp of the 1st frame grabbed.
+	int mnFirstFrame;
 };
 
 }// namespace ORB_SLAM

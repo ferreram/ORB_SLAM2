@@ -645,7 +645,8 @@ int ORBmatcher::SearchByBoW(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint *> &
                 continue;
             for(size_t j=0, jend=rotHist[i].size(); j<jend; j++)
             {
-                vpMatches12[rotHist[i][j]]=static_cast<MapPoint*>(NULL);
+				vpMatches12[rotHist[i][j]]=static_cast<MapPoint*>(NULL);
+				
                 nmatches--;
             }
         }

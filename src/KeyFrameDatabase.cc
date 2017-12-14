@@ -24,6 +24,7 @@
 #include "Thirdparty/DBoW2/DBoW2/BowVector.h"
 
 #include<mutex>
+#include<sstream>
 
 using namespace std;
 
@@ -43,6 +44,13 @@ void KeyFrameDatabase::add(KeyFrame *pKF)
 
     for(DBoW2::BowVector::const_iterator vit= pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit!=vend; vit++)
         mvInvertedFile[vit->first].push_back(pKF);
+	
+	stringstream ss;	
+	ss << pKF->mnFrameId;
+	
+	//std::string frame_id = "./frame_" + ss.str() + ".png";
+	
+	//cv::imwrite(frame_id, pKF->mImage);
 }
 
 void KeyFrameDatabase::erase(KeyFrame* pKF)
@@ -64,12 +72,29 @@ void KeyFrameDatabase::erase(KeyFrame* pKF)
             }
         }
     }
+    
+    stringstream ss;	
+	ss << pKF->mnFrameId;
+	
+	std::string frame_id = "./frame_" + ss.str() + ".png";
+	std::remove(frame_id.c_str());
 }
 
 void KeyFrameDatabase::clear()
 {
+	std::cout << "\n Reset... \n" << std::endl;
+	
     mvInvertedFile.clear();
     mvInvertedFile.resize(mpVoc->size());
+	
+	for(int i = 0 ; i < 10000 ; ++i)
+	{
+		stringstream ss;	
+		ss << i;
+		
+		std::string frame_id = "./frame_" + ss.str() + ".png";
+		std::remove(frame_id.c_str());
+	}
 }
 
 

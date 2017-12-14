@@ -51,7 +51,7 @@ public:
 
 public:
 
-    LoopClosing(Map* pMap, KeyFrameDatabase* pDB, ORBVocabulary* pVoc,const bool bFixScale);
+    LoopClosing(Map* pMap, KeyFrameDatabase* pDB, ORBVocabulary* pVoc,const bool bFixScale, const bool b_use_loop_closure);
 
     void SetTracker(Tracking* pTracker);
 
@@ -115,6 +115,7 @@ protected:
     std::mutex mMutexLoopQueue;
 
     // Loop detector parameters
+	bool mb_use_loop_closure;
     float mnCovisibilityConsistencyTh;
 
     // Loop detector variables

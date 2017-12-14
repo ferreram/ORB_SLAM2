@@ -1,0 +1,2 @@
+
+-G Unix Makefiles -DCATKIN_DEVEL_PREFIX=/home/mferrera/catkin_ws/src/ORB_SLAM2/devel_isolated -DCMAKE_INSTALL_PREFIX=/home/mferrera/catkin_ws/src/ORB_SLAM2/install_isolated

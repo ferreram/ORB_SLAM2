@@ -31,7 +31,7 @@ namespace ORB_SLAM2
 
 System::System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor,
                const bool bUseViewer):mSensor(sensor),mbReset(false),mbActivateLocalizationMode(false),
-        mbDeactivateLocalizationMode(false)
+        mbDeactivateLocalizationMode(false),mnActivatePreProcessing(0)
 {
     // Output welcome message
     cout << endl <<
@@ -91,7 +91,12 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     mptLocalMapping = new thread(&ORB_SLAM2::LocalMapping::Run,mpLocalMapper);
 
     //Initialize the Loop Closing thread and launch
-    mpLoopCloser = new LoopClosing(mpMap, mpKeyFrameDatabase, mpVocabulary, mSensor!=MONOCULAR);
+	const int b_use_loop_closure = fsSettings["Camera.UseLoopClosure"];
+	
+	if(!b_use_loop_closure)
+	    cout << endl << "NO LOOP CLOSURE WILL BE PERFORMED !!!" << endl << endl;
+    
+    mpLoopCloser = new LoopClosing(mpMap, mpKeyFrameDatabase, mpVocabulary, mSensor!=MONOCULAR, b_use_loop_closure);
     mptLoopClosing = new thread(&ORB_SLAM2::LoopClosing::Run, mpLoopCloser);
 
     //Initialize the Viewer thread and launch
@@ -110,6 +115,24 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 
     mpLoopCloser->SetTracker(mpTracker);
     mpLoopCloser->SetLocalMapper(mpLocalMapper);
+	
+	/*
+	 * 
+	 * 
+	 * 
+	 * MAX CHGMT
+	 * 
+	 * 
+	 * 
+	 */
+	
+	// Set the Image PreProcessing variable
+	mnActivatePreProcessing = fsSettings["Image.PreProcessing"];
+	
+	cout << "Image PreProcessed ? : " << mnActivatePreProcessing << endl;
+	
+	// First frame not grabbed yet
+	mnFirstFrame = 0;
 }
 
 cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp)
@@ -142,7 +165,7 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
             mpLocalMapper->Release();
             mbDeactivateLocalizationMode = false;
         }
-    }
+	}
 
     // Check reset
     {
@@ -204,6 +227,12 @@ cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const doub
 
 cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp)
 {
+	if(!mnFirstFrame)
+	{
+		std::cout << "Start Time : " << std::fixed << std::setprecision(6) << timestamp << std::endl;
+		mnFirstFrame = 1;
+	}
+	
     if(mSensor!=MONOCULAR)
     {
         cerr << "ERROR: you called TrackMonocular but input sensor was not set to Monocular." << endl;
@@ -243,8 +272,22 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp)
         mbReset = false;
     }
     }
-
-    return mpTracker->GrabImageMonocular(im,timestamp);
+    
+    if(mnActivatePreProcessing)
+	{
+		cv::Mat eqImg;
+		
+		// cv::equalizeHist(im, eqImg);
+		cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
+		clahe->setClipLimit(4);
+		clahe->apply(im,eqImg);
+		
+		return mpTracker->GrabImageMonocular(eqImg,timestamp);
+	}
+	else
+	{
+		return mpTracker->GrabImageMonocular(im,timestamp);
+	}
 }
 
 void System::ActivateLocalizationMode()
@@ -295,6 +338,8 @@ void System::SaveTrajectoryTUM(const string &filename)
     ofstream f;
     f.open(filename.c_str());
     f << fixed;
+    
+    int id = 0;
 
     // Frame pose is stored relative to its reference keyframe (which is optimized by BA and pose graph).
     // We need to get first the keyframe pose and then concatenate the relative transformation.
@@ -305,6 +350,7 @@ void System::SaveTrajectoryTUM(const string &filename)
     list<ORB_SLAM2::KeyFrame*>::iterator lRit = mpTracker->mlpReferences.begin();
     list<double>::iterator lT = mpTracker->mlFrameTimes.begin();
     list<bool>::iterator lbL = mpTracker->mlbLost.begin();
+    
     for(list<cv::Mat>::iterator lit=mpTracker->mlRelativeFramePoses.begin(),
         lend=mpTracker->mlRelativeFramePoses.end();lit!=lend;lit++, lRit++, lT++, lbL++)
     {
@@ -330,7 +376,9 @@ void System::SaveTrajectoryTUM(const string &filename)
 
         vector<float> q = Converter::toQuaternion(Rwc);
 
-        f << setprecision(6) << *lT << " " <<  setprecision(9) << twc.at<float>(0) << " " << twc.at<float>(1) << " " << twc.at<float>(2) << " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << endl;
+        f << setprecision(6) << id << " " <<  setprecision(9) << twc.at<float>(0) << " " << twc.at<float>(1) << " " << twc.at<float>(2) << " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << endl;
+        
+        id++;
     }
     f.close();
     cout << endl << "trajectory saved!" << endl;
@@ -364,8 +412,11 @@ void System::SaveKeyFrameTrajectoryTUM(const string &filename)
         cv::Mat R = pKF->GetRotation().t();
         vector<float> q = Converter::toQuaternion(R);
         cv::Mat t = pKF->GetCameraCenter();
-        f << setprecision(6) << pKF->mTimeStamp << setprecision(7) << " " << t.at<float>(0) << " " << t.at<float>(1) << " " << t.at<float>(2)
-          << " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << endl;
+        // f << "# Frame " << pKF->mnFrameId << "\n" << setprecision(6) << pKF->mTimeStamp << setprecision(7) << " " << t.at<float>(0) << " " << t.at<float>(1) << " " << t.at<float>(2)
+        //  << " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << endl;
+		
+		f << pKF->mnFrameId << setprecision(6) << " " << t.at<float>(0) << " " << t.at<float>(1) << " " << t.at<float>(2)
+		<< " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << endl;
 
     }
 
