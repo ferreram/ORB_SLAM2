@@ -23,3 +23,6 @@ Vocabulary/ORBvoc.txt
 build/
 *~
 lib/
+cmake_modules/
+build_isolated/
+devel_isolated/
