@@ -5,15 +5,15 @@
 #--------------------------------------------------------------------------------------------
 
 # Camera calibration and distortion parameters (OpenCV) 
-Camera.fx: 243.63
-Camera.fy: 327.26
-Camera.cx: 404.45
-Camera.cy: 203.98
+Camera.fx: 869.57153589
+Camera.fy: 868.1183944
+Camera.cx: 372.50825442
+Camera.cy: 251.95109693
 
-Camera.k1: -0.08006779695246845
-Camera.k2: 0.008319420239692942
-Camera.p1: 0.006964169267794869
-Camera.p2: -0.00267418934479685
+Camera.k1: 0.02273871
+Camera.k2: 0.01916195
+Camera.p1: -0.00190073
+Camera.p2: -0.00053882
 
 # Camera frames per second 
 Camera.fps: 20.0
@@ -21,8 +21,8 @@ Camera.fps: 20.0
 # Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
 Camera.RGB: 1
 
-# Use Loop Closure ?
-Camera.UseLoopClosure: 1
+# Perform Loop Closures ?
+Camera.UseLoopClosure: 0
 
 #--------------------------------------------------------------------------------------------
 # ORB Parameters
@@ -32,7 +32,7 @@ Camera.UseLoopClosure: 1
 ORBextractor.nFeatures: 2000
 
 # ORB Extractor: Scale factor between levels in the scale pyramid (min->1 / max->2)     
-ORBextractor.scaleFactor: 1.2
+ORBextractor.scaleFactor: 1.4
 
 # ORB Extractor: Number of levels in the scale pyramid  
 ORBextractor.nLevels: 8

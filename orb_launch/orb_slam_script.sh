@@ -10,4 +10,4 @@ read file
 
 echo "Expecting images on ROS topic /camera/image_raw !"
 
-rosrun ORB_SLAM2 Mono Vocabulary/ORBvoc.txt config/$file
+rosrun ORB_SLAM2 Mono ../Vocabulary/ORBvoc.txt config/$file
