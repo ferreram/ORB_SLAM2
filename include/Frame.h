@@ -187,6 +187,7 @@ public:
 
     static bool mbInitialComputations;
 
+    cv::Mat mImage;
 
 private:
 

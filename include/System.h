@@ -174,6 +174,9 @@ private:
     std::vector<MapPoint*> mTrackedMapPoints;
     std::vector<cv::KeyPoint> mTrackedKeyPointsUn;
     std::mutex mMutexState;
+
+    int mnActivatePreProcessing;
+    int mnFirstFrame;
 };
 
 }// namespace ORB_SLAM
